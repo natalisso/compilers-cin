@@ -1,14 +1,85 @@
 /* nome da gramática -- deve ser o mesmo nome do arquivo .g4 e começar com letra maiúscula*/
 grammar Grammar;
 
+
 /* parser */
 /* regra raiz */
-file : ;
+file : (function_definition | variable_definition ';')+;
+
+
+variable_definition : type identifier ('=' expression)?;
+
+function_definition : type identifier arguments body;
+
+
+
+
+type : TYPEINT | TYPEFLOAT;
+
+expression 
+	: '(' expression ')' 
+	| ('+' | '-') expression                                                       
+	| expression ('<' | '>' | '<=' | '>=') expression    
+	| expression ('*' | '/') expression                  
+	| expression ('+' | '-') expression                  
+	| expression ('&&'| '||') expression                  
+	| expression ('=='| '!=') expression 
+	| function_call                 
+	| identifier | integer | floating | string                                                                                         
+	;
+
+arguments : '(' ((type identifier) (',' type identifier)*)?  ')';
+body : '{' statement* '}';
+
+statement 
+	: variable_definition ';'
+	| ifElseStat 
+	| 'return' expression ';'
+	| variable_assignment ';' 
+	| expression ';'
+	;
+
+variable_assignment : identifier ('=' | '/=' | '-=') expression;
+
+function_call : identifier '(' (expression (',' expression)*)?  ')';
+
+
+ifStat : 'if' '(' expression ')' ifElseExprStat;
+elseStat : 'else' ifElseExprStat;
+ifElseStat : ifStat (elseStat)?;
+ifElseExprStat 
+	: body 
+	| ifElseStat
+	| 'return' expression ';'
+	| variable_assignment
+	| expression ';'
+	;
+
+
+identifier : ID;
+integer : INTEGER;
+floating :  FLOAT;
+string : STRING;
 
 
 /* lexer */  
+TYPEINT  : 'int';
+TYPEFLOAT  : 'float';
+
+IF     : 'if';
+ELSE   : 'else';
+RETURN : 'return';
+
+STRING : '"'.*?'"';
+INTEGER : [0-9]+;
+FLOAT : [0-9]+'.'[0-9]+;
+ID : [a-zA-Z] ('_' | [a-zA-Z] | [0-9]+)*;
 
 
+BLOCKCOMMENT : '/*' .*? '*/' -> skip;
+LINECOMMENT  : '//' .*? '\n' -> skip;
+DEFINEINCLUDE  : '#' .*? '\n' -> skip;
+WS           : [ \t\n\r]+ -> skip;
 /*
 MANUAL
 
