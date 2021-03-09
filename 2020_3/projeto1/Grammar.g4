@@ -7,54 +7,49 @@ grammar Grammar;
 file : (function_definition | variable_definition ';')+;
 
 
-variable_definition : type identifier ('=' expression)?;
+variable_definition : type (identifier ('=' expression)? (',' identifier ('=' expression)?)* | array  ('=' array_literal)?);
 
 function_definition : type identifier arguments body;
 
 
-
-
-type : TYPEINT | TYPEFLOAT;
+type : 'int' | 'float';
 
 expression 
-	: '(' expression ')' 
-	| ('+' | '-') expression                                                       
+	: '(' expression ')'  
+	| ('+' | '-') expression                                                 
 	| expression ('<' | '>' | '<=' | '>=') expression    
 	| expression ('*' | '/') expression                  
 	| expression ('+' | '-') expression                  
 	| expression ('&&'| '||') expression                  
 	| expression ('=='| '!=') expression 
 	| function_call                 
-	| identifier | integer | floating | string                                                                                         
+	| identifier | integer | floating | string | array | '++' | '--'                                                                                    
 	;
 
 arguments : '(' ((type identifier) (',' type identifier)*)?  ')';
 body : '{' statement* '}';
 
 statement 
-	: variable_definition ';'
-	| ifElseStat 
+	: for_loop
+	| if_statement
 	| 'return' expression ';'
-	| variable_assignment ';' 
-	| expression ';'
+	|  expression ';' | variable_definition ';' | variable_assignment ';' 
 	;
 
-variable_assignment : identifier ('=' | '/=' | '-=') expression;
+for_loop:'for' '(' for_initializer ';' for_condition ';' for_step ')' body;
+for_initializer:variable_definition;
+for_condition: expression;
+for_step: variable_assignment;
+
+variable_assignment : identifier ('=' | '/=' | '-=')? expression;
 
 function_call : identifier '(' (expression (',' expression)*)?  ')';
 
+if_statement : 'if' '(' expression ')' (statement | body (else_statement)?);
+else_statement : 'else' (statement | body);
 
-ifStat : 'if' '(' expression ')' ifElseExprStat;
-elseStat : 'else' ifElseExprStat;
-ifElseStat : ifStat (elseStat)?;
-ifElseExprStat 
-	: body 
-	| ifElseStat
-	| 'return' expression ';'
-	| variable_assignment
-	| expression ';'
-	;
-
+array: identifier '[' expression ']';
+array_literal : '{' expression (',' expression)* '}';
 
 identifier : ID;
 integer : INTEGER;
@@ -63,13 +58,6 @@ string : STRING;
 
 
 /* lexer */  
-TYPEINT  : 'int';
-TYPEFLOAT  : 'float';
-
-IF     : 'if';
-ELSE   : 'else';
-RETURN : 'return';
-
 STRING : '"'.*?'"';
 INTEGER : [0-9]+;
 FLOAT : [0-9]+'.'[0-9]+;

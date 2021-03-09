@@ -6,3 +6,14 @@
 *.o
 */provas-leopoldo
 **/*.class
+
+*.DS_Store
+*.antlr/
+*.interp
+*.tokens
+*BaseListener.java
+*Lexer.interp
+*Lexer.java
+*Lexer.tokens
+*Listener.java
+*Parser.java
